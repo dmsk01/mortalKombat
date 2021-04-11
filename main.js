@@ -68,14 +68,12 @@ function randomHP() {
 function changeHP(player) {
   const playerLife = document.querySelector(`.player${player.player} .life`);
   player.hp -= randomHP();
-  playerLife.style.width = player.hp + "%";
 
   if (player.hp <= 0) {
     player.hp = 0;
-    playerLife.style.width = 0;
     randomButton.disabled = true;
   }
-  console.log(player.name, player.hp);
+  playerLife.style.width = player.hp + "%";
 }
 
 function checkingPlayersHp() {
