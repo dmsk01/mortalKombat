@@ -11,6 +11,9 @@ const player1 = {
   attack: function () {
     return `${this.name} fight...`;
   },
+  changeHP,
+  elHP,
+  renderHP,
 };
 
 const player2 = {
@@ -22,6 +25,9 @@ const player2 = {
   attack: function () {
     return `${this.name} Fight...`;
   },
+  changeHP,
+  elHP,
+  renderHP,
 };
 
 function createElement(tagName, className) {
@@ -61,51 +67,70 @@ function createPlayer(playerObj) {
   return playerContainer;
 }
 
-function randomHP() {
-  return Math.ceil(Math.random() * 20);
+function createReloadButton() {
+  const buttonWrap = createElement("div", "reloadWrap");
+
+  const button = createElement("button", "button");
+
+  button.innerText = "Restart";
+  button.addEventListener("click", function () {
+    window.location.reload();
+  });
+
+  buttonWrap.appendChild(button);
+
+  return buttonWrap;
 }
 
-function changeHP(player) {
-  const playerLife = document.querySelector(`.player${player.player} .life`);
-  player.hp -= randomHP();
+function randomHP(num) {
+  return Math.ceil(Math.random() * num);
+}
 
-  if (player.hp <= 0) {
-    player.hp = 0;
-    randomButton.disabled = true;
+function changeHP(num) {
+  this.hp -= num;
+
+  if (this.hp <= 0) {
+    this.hp = 0;
   }
-  playerLife.style.width = player.hp + "%";
 }
 
-function checkingPlayersHp() {
-  let winner;
-  if (player1.hp > player2.hp) {
-    winner = player1;
-  } else if (player1.hp < player2.hp) {
-    winner = player2;
+function elHP() {
+  return document.querySelector(`.player${this.player} .life`);
+}
+
+function renderHP(elHP) {
+  elHP.style.width = this.hp + "%";
+}
+
+function playerWins(name) {
+  const winTitle = createElement("div", "loseTitle");
+  if (name) {
+    winTitle.innerText = `${name} wins!`;
   } else {
-    winner = null;
+    winTitle.innerText = `Draw!`;
   }
-
-  if (player1.hp === 0 || player2.hp === 0) {
-    arenas.appendChild(playerLose(winner));
-  }
-}
-
-function playerLose(player) {
-  const loseTitle = createElement("div", "loseTitle");
-  if (player) {
-    loseTitle.innerText = `${player.name} win!`;
-  } else {
-    loseTitle.innerText = `Draw!`;
-  }
-
-  return loseTitle;
+  return winTitle;
 }
 
 randomButton.addEventListener("click", function () {
-  changeHP(player1);
-  changeHP(player2);
-  checkingPlayersHp();
+  player1.changeHP(randomHP(20));
+  player1.renderHP(player1.elHP());
+
+  player2.changeHP(randomHP(20));
+  player2.renderHP(player2.elHP());
+
+  if (player1.hp === 0 || player2.hp === 0) {
+    randomButton.disabled = true;
+    arenas.appendChild(createReloadButton());
+  }
+
+  if (player1.hp === 0 && player1.hp < player2.hp) {
+    arenas.appendChild(playerWins(player2.name));
+  } else if (player2.hp === 0 && player1.hp > player2.hp) {
+    arenas.appendChild(playerWins(player1.name));
+  } else if (player1.hp === 0 && player2.hp === 0) {
+    arenas.appendChild(playerWins());
+  }
 });
 
 arenas.appendChild(createPlayer(player1));
