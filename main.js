@@ -169,9 +169,6 @@ function hitDefenceEquality(player, enemy) {
     player1.changeHP(enemy.value);
     player1.renderHP(player1.elHP());
   }
-
-  console.log(player);
-  console.log(enemy);
 }
 
 formFight.addEventListener("submit", function (e) {
@@ -195,15 +192,6 @@ formFight.addEventListener("submit", function (e) {
   }
 
   hitDefenceEquality(attack, enemy);
-  // if (attack.hit !== enemy.defence) {
-  //   player2.changeHP(attack.value);
-  //   player2.renderHP(player2.elHP());
-  // }
-
-  // if (enemy.hit !== attack.defence) {
-  //   player1.changeHP(enemy.value);
-  //   player1.renderHP(player1.elHP());
-  // }
 
   if (player1.hp === 0 || player2.hp === 0) {
     randomButton.disabled = true;
