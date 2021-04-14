@@ -2,15 +2,23 @@ const arenas = document.querySelector(".arenas");
 
 const randomButton = document.querySelector(".button");
 
+const formFight = document.querySelector(".control");
+
+const HIT = {
+  head: 30,
+  body: 25,
+  foot: 20,
+};
+
+const ATTACK = ["head", "body", "foot"];
+
 const player1 = {
   player: 1,
   name: "sonya",
   hp: 100,
   img: "http://reactmarathon-api.herokuapp.com/assets/sonya.gif",
   weapon: ["Ssanaya tryapka"],
-  attack: function () {
-    return `${this.name} fight...`;
-  },
+  attack,
   changeHP,
   elHP,
   renderHP,
@@ -22,9 +30,7 @@ const player2 = {
   hp: 100,
   img: "http://reactmarathon-api.herokuapp.com/assets/subzero.gif",
   weapon: ["Ssanyi venik"],
-  attack: function () {
-    return `${this.name} Fight...`;
-  },
+  attack,
   changeHP,
   elHP,
   renderHP,
@@ -55,7 +61,7 @@ function createPlayer(playerObj) {
   playerContainer.appendChild(character);
 
   const life = createElement("div", "life");
-  //life.innerText = playerObj.hp;
+
   life.style.width = `${playerObj.hp}%`;
 
   const name = createElement("div", "name");
@@ -73,16 +79,21 @@ function createReloadButton() {
   const button = createElement("button", "button");
 
   button.innerText = "Restart";
+
   button.addEventListener("click", function () {
     window.location.reload();
   });
 
   buttonWrap.appendChild(button);
 
-  return buttonWrap;
+  arenas.appendChild(buttonWrap);
 }
 
-function randomHP(num) {
+function attack() {
+  return `${this.name} Fight...`;
+}
+
+function getRandom(num) {
   return Math.ceil(Math.random() * num);
 }
 
@@ -112,16 +123,91 @@ function playerWins(name) {
   return winTitle;
 }
 
-randomButton.addEventListener("click", function () {
-  player1.changeHP(randomHP(20));
-  player1.renderHP(player1.elHP());
+// randomButton.addEventListener("click", function () {
+//   player1.changeHP(getRandom(20));
+//   player1.renderHP(player1.elHP());
 
-  player2.changeHP(randomHP(20));
-  player2.renderHP(player2.elHP());
+//   player2.changeHP(getRandom(20));
+//   player2.renderHP(player2.elHP());
+
+//   if (player1.hp === 0 || player2.hp === 0) {
+//     randomButton.disabled = true;
+//     createReloadButton();
+//   }
+
+//   if (player1.hp === 0 && player1.hp < player2.hp) {
+//     arenas.appendChild(playerWins(player2.name));
+//   } else if (player2.hp === 0 && player1.hp > player2.hp) {
+//     arenas.appendChild(playerWins(player1.name));
+//   } else if (player1.hp === 0 && player2.hp === 0) {
+//     arenas.appendChild(playerWins());
+//   }
+// });
+
+arenas.appendChild(createPlayer(player1));
+arenas.appendChild(createPlayer(player2));
+
+function enemyAttack() {
+  const hit = ATTACK[getRandom(3) - 1];
+  const defence = ATTACK[getRandom(3) - 1];
+
+  return {
+    value: getRandom(HIT[hit]),
+    hit,
+    defence,
+  };
+}
+
+function hitDefenceEquality(player, enemy) {
+  if (player.hit !== enemy.defence) {
+    console.log("hitted");
+    player2.changeHP(player.value);
+    player2.renderHP(player2.elHP());
+  }
+
+  if (player.defence !== enemy.hit) {
+    player1.changeHP(enemy.value);
+    player1.renderHP(player1.elHP());
+  }
+
+  console.log(player);
+  console.log(enemy);
+}
+
+formFight.addEventListener("submit", function (e) {
+  e.preventDefault();
+
+  const enemy = enemyAttack();
+
+  const attack = {};
+
+  for (let item of formFight) {
+    if (item.checked && item.name === "hit") {
+      attack.value = getRandom(HIT[item.value]);
+      attack.hit = item.value;
+    }
+
+    if (item.checked && item.name === "defence") {
+      attack.defence = item.value;
+    }
+
+    item.checked = false;
+  }
+
+  hitDefenceEquality(attack, enemy);
+  // if (attack.hit !== enemy.defence) {
+  //   player2.changeHP(attack.value);
+  //   player2.renderHP(player2.elHP());
+  // }
+
+  // if (enemy.hit !== attack.defence) {
+  //   player1.changeHP(enemy.value);
+  //   player1.renderHP(player1.elHP());
+  // }
 
   if (player1.hp === 0 || player2.hp === 0) {
     randomButton.disabled = true;
-    arenas.appendChild(createReloadButton());
+    createReloadButton();
   }
 
   if (player1.hp === 0 && player1.hp < player2.hp) {
@@ -132,6 +218,3 @@ randomButton.addEventListener("click", function () {
     arenas.appendChild(playerWins());
   }
 });
-
-arenas.appendChild(createPlayer(player1));
-arenas.appendChild(createPlayer(player2));
