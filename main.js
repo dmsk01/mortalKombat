@@ -158,16 +158,10 @@ function enemyAttack() {
   };
 }
 
-function hitDefenceEquality(player, enemy) {
-  if (player.hit !== enemy.defence) {
-    console.log("hitted");
-    player2.changeHP(player.value);
-    player2.renderHP(player2.elHP());
-  }
-
-  if (player.defence !== enemy.hit) {
-    player1.changeHP(enemy.value);
-    player1.renderHP(player1.elHP());
+function compareDamage(hit, defence, value, player) {
+  if (hit !== defence) {
+    player.changeHP(value);
+    player.renderHP(player.elHP());
   }
 }
 
@@ -191,7 +185,8 @@ formFight.addEventListener("submit", function (e) {
     item.checked = false;
   }
 
-  hitDefenceEquality(attack, enemy);
+  compareDamage(attack.hit, enemy.defence, enemy.value, player2);
+  compareDamage(enemy.hit, attack.defence, attack.value, player1);
 
   if (player1.hp === 0 || player2.hp === 0) {
     randomButton.disabled = true;
