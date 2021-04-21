@@ -98,30 +98,25 @@ function createReloadButton() {
   arenas.appendChild(buttonWrap);
 }
 
-arenas.appendChild(createPlayer(player1));
-arenas.appendChild(createPlayer(player2));
-
-function generateLogs(type, player1, player2, playerHp) {
+function generateLogs(type, player1 = {}, player2 = {}, playerHp) {
   let text;
   switch (type) {
     case "start":
       text = logs[type].replace("[time]", getTime()).replace("[player1]", player1.name).replace("[player2]", player2.name);
       break;
     case "hit":
-      text = logs[type][getRandom(logs.hit.length - 1)].replace("[playerKick]", player1.name).replace("[playerDefence]", player2.name) + `, -${playerHp}HP, [${player2.hp}/100]`;
+      text = logs[type][getRandom(logs.hit.length - 1) - 1].replace("[playerKick]", player1.name).replace("[playerDefence]", player2.name) + `, -${playerHp}HP, [${player2.hp}/100]`;
       break;
     case "defence":
-      text = logs[type][getRandom(logs.defence.length - 1)].replace("[playerKick]", player2.name).replace("[playerDefence]", player1.name);
+      text = logs[type][getRandom(logs.defence.length - 1) - 1].replace("[playerKick]", player2.name).replace("[playerDefence]", player1.name);
       break;
     case "draw":
       text = logs[type];
       break;
     case "end":
-      text = logs[type][getRandom(logs.end.length)].replace("[playerWins]", player1.name).replace("[playerLose]", player2.name);
+      text = logs[type][getRandom(logs.end.length - 1) - 1].replace("[playerWins]", player1.name).replace("[playerLose]", player2.name);
       break;
   }
-  console.log(text);
-  console.log(type);
   const el = `<p>${getTime()} ${text}</p>`;
   chat.insertAdjacentHTML("afterbegin", el);
 }
@@ -183,4 +178,10 @@ formFight.addEventListener("submit", function (e) {
   showResult(player1, player2);
 });
 
-generateLogs("start", player1, player2);
+function init() {
+  arenas.appendChild(createPlayer(player1));
+  arenas.appendChild(createPlayer(player2));
+  generateLogs("start", player1, player2);
+}
+
+init();

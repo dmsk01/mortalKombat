@@ -9,4 +9,3 @@ export function getTime() {
   let seconds = twoNumbersTimeFormat(date.getSeconds());
   return `${hours}:${minutes}:${seconds}`;
 }
-
