@@ -1,3 +1,6 @@
+import { player1, player2, enemyAttack, playerAttack } from "./player.js";
+import { getRandom, getTime } from "./utils.js";
+
 const arenas = document.querySelector(".arenas");
 
 const randomButton = document.querySelector(".button");
@@ -40,38 +43,6 @@ const logs = {
     "[playerKick] обманулся и жестокий [playerDefence] блокировал удар стопой в солнечное сплетение.",
   ],
   draw: "Ничья - это тоже победа!",
-};
-
-const HIT = {
-  head: 30,
-  body: 25,
-  foot: 20,
-};
-
-const ATTACK = ["head", "body", "foot"];
-
-const player1 = {
-  player: 1,
-  name: "sonya",
-  hp: 100,
-  img: "http://reactmarathon-api.herokuapp.com/assets/sonya.gif",
-  weapon: ["Ssanaya tryapka"],
-  attack,
-  changeHP,
-  elHP,
-  renderHP,
-};
-
-const player2 = {
-  player: 2,
-  name: "subzero",
-  hp: 100,
-  img: "http://reactmarathon-api.herokuapp.com/assets/subzero.gif",
-  weapon: ["Ssanyi venik"],
-  attack,
-  changeHP,
-  elHP,
-  renderHP,
 };
 
 function createElement(tagName, className) {
@@ -127,31 +98,32 @@ function createReloadButton() {
   arenas.appendChild(buttonWrap);
 }
 
-function attack() {
-  return `${this.name} Fight...`;
-}
-
-function getRandom(num) {
-  return Math.ceil(Math.random() * num);
-}
-
-function changeHP(num) {
-  this.hp -= num;
-
-  if (this.hp <= 0) {
-    this.hp = 0;
+function generateLogs(type, player1 = {}, player2 = {}, playerHp) {
+  let text;
+  switch (type) {
+    case "start":
+      text = logs[type].replace("[time]", getTime()).replace("[player1]", player1.name).replace("[player2]", player2.name);
+      break;
+    case "hit":
+      text = logs[type][getRandom(logs.hit.length - 1) - 1].replace("[playerKick]", player1.name).replace("[playerDefence]", player2.name) + `, -${playerHp}HP, [${player2.hp}/100]`;
+      break;
+    case "defence":
+      text = logs[type][getRandom(logs.defence.length - 1) - 1].replace("[playerKick]", player2.name).replace("[playerDefence]", player1.name);
+      break;
+    case "draw":
+      text = logs[type];
+      break;
+    case "end":
+      text = logs[type][getRandom(logs.end.length - 1) - 1].replace("[playerWins]", player1.name).replace("[playerLose]", player2.name);
+      break;
+    default:
+      text = "Something went wrong!";
   }
+  const el = `<p>${getTime()} ${text}</p>`;
+  chat.insertAdjacentHTML("afterbegin", el);
 }
 
-function elHP() {
-  return document.querySelector(`.player${this.player} .life`);
-}
-
-function renderHP(elHP) {
-  elHP.style.width = this.hp + "%";
-}
-
-function playerWins(name) {
+export function playerWins(name) {
   const winTitle = createElement("div", "loseTitle");
   if (name) {
     winTitle.innerText = `${name} wins!`;
@@ -159,39 +131,6 @@ function playerWins(name) {
     winTitle.innerText = `Draw!`;
   }
   return winTitle;
-}
-
-arenas.appendChild(createPlayer(player1));
-arenas.appendChild(createPlayer(player2));
-
-function enemyAttack() {
-  const hit = ATTACK[getRandom(3) - 1];
-  const defence = ATTACK[getRandom(3) - 1];
-
-  return {
-    value: getRandom(HIT[hit]),
-    hit,
-    defence,
-  };
-}
-
-function playerAttack() {
-  const attack = {};
-
-  for (let item of formFight) {
-    if (item.checked && item.name === "hit") {
-      attack.value = getRandom(HIT[item.value]);
-      attack.hit = item.value;
-    }
-
-    if (item.checked && item.name === "defence") {
-      attack.defence = item.value;
-    }
-
-    item.checked = false;
-  }
-
-  return attack;
 }
 
 function showResult() {
@@ -212,65 +151,39 @@ function showResult() {
   }
 }
 
-function twoNumbersTimeFormat(num) {
-  return num <= 9 ? "0" + num : num;
-}
-
-function getTime() {
-  const date = new Date();
-  let hours = twoNumbersTimeFormat(date.getHours());
-  let minutes = twoNumbersTimeFormat(date.getMinutes());
-  let seconds = twoNumbersTimeFormat(date.getSeconds());
-  return `${hours}:${minutes}:${seconds}`;
-}
-
-function generateLogs(type, player1, player2, playerHp) {
-  let text;
-  switch (type) {
-    case "start":
-      text = logs[type].replace("[time]", getTime()).replace("[player1]", player1.name).replace("[player2]", player2.name);
-      break;
-    case "hit":
-      text = logs[type][getRandom(logs.hit.length - 1)].replace("[playerKick]", player1.name).replace("[playerDefence]", player2.name) + `, -${playerHp}HP, [${player2.hp}/100]`;
-      break;
-    case "defence":
-      text = logs[type][getRandom(logs.defence.length - 1)].replace("[playerKick]", player2.name).replace("[playerDefence]", player1.name);
-      break;
-    case "draw":
-      text = logs[type];
-      break;
-    case "end":
-      text = logs[type][getRandom(logs.end.length)].replace("[playerWins]", player1.name).replace("[playerLose]", player2.name);
-      break;
-  }
-  const el = `<p>${getTime()} ${text}</p>`;
-  chat.insertAdjacentHTML("afterbegin", el);
-}
-
 formFight.addEventListener("submit", function (e) {
   e.preventDefault();
 
   const enemy = enemyAttack();
 
-  const player = playerAttack();
+  const player = playerAttack(formFight);
 
-  if (player.defence !== enemy.hit) {
-    player1.changeHP(enemy.value);
+  const { value: enemyValue, hit: enemyHit, defence: enemyDefence } = enemy;
+  const { value: playerValue, hit: playerHit, defence: playerDefence } = player;
+
+  if (playerDefence !== enemyHit) {
+    player1.changeHP(enemyValue);
     player1.renderHP(player1.elHP());
-    generateLogs("hit", player2, player1, enemy.value);
+    generateLogs("hit", player2, player1, enemyValue);
   } else {
     generateLogs("defence", player1, player2);
   }
 
-  if (enemy.defence !== player.hit) {
-    player2.changeHP(player.value);
+  if (enemyDefence !== playerHit) {
+    player2.changeHP(playerValue);
     player2.renderHP(player2.elHP());
-    generateLogs("hit", player1, player2, player.value);
+    generateLogs("hit", player1, player2, playerValue);
   } else {
     generateLogs("defence", player2, player1);
   }
 
-  showResult();
+  showResult(player1, player2);
 });
 
-generateLogs("start", player1, player2);
+function init() {
+  arenas.appendChild(createPlayer(player1));
+  arenas.appendChild(createPlayer(player2));
+  generateLogs("start", player1, player2);
+}
+
+init();
