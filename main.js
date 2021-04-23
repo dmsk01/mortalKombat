@@ -116,6 +116,8 @@ function generateLogs(type, player1 = {}, player2 = {}, playerHp) {
     case "end":
       text = logs[type][getRandom(logs.end.length - 1) - 1].replace("[playerWins]", player1.name).replace("[playerLose]", player2.name);
       break;
+    default:
+      text = "Something went wrong!";
   }
   const el = `<p>${getTime()} ${text}</p>`;
   chat.insertAdjacentHTML("afterbegin", el);
