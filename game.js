@@ -1,12 +1,14 @@
 import { getRandom, getTime } from "./utils.js";
+import { player1, player2 } from "./player.js";
+
 export default class Game {
-  constructor(props) {
-    this.player1 = props.player1;
-    this.player2 = props.player2;
-    this.formFight = props.formFight;
+  constructor() {
+    this.player1 = player1;
+    this.player2 = player2;
     this.arenas = document.querySelector(".arenas");
     this.randomButton = document.querySelector(".button");
     this.chat = document.querySelector(".chat");
+    this.formFight = document.querySelector(".control");
     this.logs = {
       start: "Часы показывали [time], когда [player1] и [player2] бросили вызов друг другу.",
       end: ["Результат удара [playerWins]: [playerLose] - труп", "[playerLose] погиб от удара бойца [playerWins]", "Результат боя: [playerLose] - жертва, [playerWins] - убийца"],
@@ -146,5 +148,29 @@ export default class Game {
     this.arenas.appendChild(this.createPlayer(this.player1));
     this.arenas.appendChild(this.createPlayer(this.player2));
     this.generateLogs("start", this.player1, this.player2);
+    this.formFight.addEventListener("submit", (e) => {
+      e.preventDefault();
+
+      const { value: enemyValue, hit: enemyHit, defence: enemyDefence } = this.player2.enemyAttack();
+      const { value: playerValue, hit: playerHit, defence: playerDefence } = this.player1.playerAttack(this.formFight);
+
+      if (playerDefence !== enemyHit) {
+        this.player1.changeHP(enemyValue);
+        this.player1.renderHP(this.player1.elHP());
+        this.generateLogs("hit", this.player2, this.player1, enemyValue);
+      } else {
+        this.generateLogs("defence", this.player1, this.player2);
+      }
+
+      if (enemyDefence !== playerHit) {
+        this.player2.changeHP(playerValue);
+        this.player2.renderHP(this.player2.elHP());
+        this.generateLogs("hit", this.player1, this.player2, playerValue);
+      } else {
+        this.generateLogs("defence", this.player2, this.player1);
+      }
+
+      this.showResult(this.player1, this.player2);
+    });
   };
 }
